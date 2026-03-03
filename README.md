@@ -1,150 +1,176 @@
-# CL-MCSDS-CMU-10-04\_DAS7000\_student\_performance\_xai
+CL-MCSDS-CMU-10-04_DAS7000_student_performance_xai
 
-Machine learning framework for student performance prediction with explainable AI and trustworthy visual analytics. DAS7000 PORT1
+Machine Learning Framework for Student Performance Prediction with Explainable AI (XAI)
+DAS7000 – Data Analytics and Visualisation (PORT1)
 
-# Multiclass Student Performance Prediction with Explainable AI (SHAP)
+Multiclass Student Performance Prediction with Explainable AI (SHAP)
+This project develops a machine learning framework to predict a student’s final academic performance category using the UCI Student Performance (Portuguese) dataset.
 
-This project predicts a student’s **final performance category** using the **UCI Student Performance (Portuguese)** dataset.  
-It runs a **two-stage experiment** (Early vs Mid-term) and explains the best model using **SHAP**.
+The framework compares multiple models across two experimental stages and integrates Explainable AI (SHAP) to provide transparent and trustworthy insights into predictions.
 
----
+1) Project Overview
+Educational institutions require early identification of students who may be at academic risk.
 
-## 1) Project Overview
+This project formulates student performance prediction as a multiclass classification problem, providing richer insight than binary pass/fail prediction.
 
-Educators often need early signals to identify students who may struggle before the end of the academic year.  
-This notebook builds a machine learning framework to predict a student’s final performance band and explains the key factors behind predictions.
+Prediction Target
+The dataset includes three academic grades:
+G1 – First period grade
+G2 – Second period grade
+G3 – Final grade
 
-### Prediction Target (Multiclass)
+Final grade (G3) is converted into:
+Low: 0–9
+Medium: 10–14
+High: 15–20
 
-The dataset includes three grades:
+This allows identification of performance bands rather than a simple pass/fail outcome.
 
-- **G1**: First period grade  
-- **G2**: Second period grade  
-- **G3**: Final grade  
+2) Two-Stage Experimental Design
+Stage A – Early Model (Early Warning System)
+Predicts final performance using:
+Demographic features
+Behavioural features
+Family and engagement variables
+Excludes G1 and G2 to simulate early academic intervention.
 
-We convert **G3** into a multiclass outcome:
+Stage B – Mid-Term Model (With Academic Signals)
+Predicts final performance using:
+All background features
+G1 and G2 (mid-year academic history)
+This stage tests performance once academic indicators are available.
 
-- **Low**: 0–9  
-- **Medium**: 10–14  
-- **High**: 15–20  
+3) Models Trained
+For each stage, the following models were trained and compared:
+Logistic Regression
+Random Forest
+XGBoost (Multiclass)
 
----
+4) Preprocessing Pipeline
+A full scikit-learn Pipeline was implemented:
+Categorical features → OneHotEncoder(handle_unknown="ignore")
+Numeric features:
+StandardScaler (Logistic Regression only)
+Passthrough (Tree-based models)
 
-## 2) Two-Stage Experiment
+Data split:
+Stratified 80/20 train-test split
+Fixed random seed (RANDOM_STATE = 42)
+This ensures reproducibility and consistent evaluation.
 
-### Stage A: Early Model (Early Warning)
+5) Evaluation Metrics
+Models were evaluated using:
+Accuracy
+Macro F1-score (primary comparison metric)
+Weighted F1-score
+Multiclass ROC-AUC (One-vs-Rest Macro)
+Confusion Matrix
+ROC Curves
+Why Macro F1?
+Macro F1 treats all classes equally and is more appropriate when class distribution is imbalanced.
 
-Predicts final category using **background + behavioural features only**.  
-Excludes **G1** and **G2** to simulate early intervention.
+6) Final Model Performance
+The best-performing model was:
+Random Forest – Mid-Term Stage
+Test Set Results (n = 130)
+Accuracy: 0.8846
+Macro F1-score: 0.8408
+Weighted F1-score: 0.8793
+ROC-AUC (OvR Macro): 0.9533
 
-### Stage B: Mid-Term Model (With Academic History)
+The confusion matrix shows:
+Strong recall for the Medium class
+High precision for the High class
+Minor misclassification between Low and Medium categories
+This demonstrates strong predictive performance with interpretable error patterns.
 
-Predicts final category using **background features + G1 + G2**.  
-Includes academic signals to improve predictive power.
-
----
-
-## 3) Models Trained
-
-For each stage, the following models are trained and compared:
-
-- Logistic Regression  
-- Random Forest  
-- XGBoost (multiclass)
-
-### Preprocessing
-
-- Categorical features: `OneHotEncoder(handle_unknown="ignore")`
-- Numeric features:
-  - `StandardScaler` (Logistic Regression only)
-  - Passthrough (for tree-based models)
-
-### Data Split
-
-- Stratified **80/20 train-test split**
-- Fixed random seed for reproducibility (`RANDOM_STATE = 42`)
-
----
-
-## 4) Evaluation Metrics
-
-Models are evaluated using:
-
-- Accuracy  
-- Macro F1 (primary comparison metric)  
-- Weighted F1  
-- Multiclass ROC-AUC (OvR macro)  
-- Confusion Matrix  
-- One-vs-Rest ROC curves  
-
-### Why Macro F1?
-
-Macro F1 treats all classes equally and is more appropriate than accuracy when classes are imbalanced.
-
----
-
-## 5) Best Model + Explainability (SHAP)
-
-The best-performing mid-term model (based on **Macro F1**) is selected for explainability.
+7) Explainable AI Integration (SHAP)
+The best-performing model was analysed using SHAP.
 
 SHAP provides:
+Global Explanations
+Feature importance ranking
+SHAP summary plots
+Local Explanations
+Individual student-level explanations
+Waterfall and bar plots
+Tree-based models use TreeExplainer for accurate interpretation.
 
-- **Global explanations**: Which features matter most overall  
-- **Local explanations**: Why a specific student was predicted as Low, Medium, or High  
+This improves transparency and supports educator trust in AI predictions.
 
-For tree-based models like **Random Forest** and **XGBoost**, `TreeExplainer` is used for accurate model interpretation.
-
----
-
-## 6) Calibration (Probability Reliability Check)
-
-Calibration curves (one-vs-rest) are plotted for each class to evaluate how well predicted probabilities match actual outcomes.
-
-Probability columns are explicitly aligned to a fixed order:
-
-```python
+8) Calibration Analysis
+Calibration curves (One-vs-Rest) were plotted to evaluate probability reliability.
+Probability columns were aligned to a fixed class order:
 CLASS_ORDER = ["Low", "Medium", "High"]
 
-This prevents misalignment when model.classes_ is in a different order than expected.
+This prevents probability misalignment when model.classes_ differs in ordering.
 
-7) Dataset
-Source: UCI Machine Learning Repository — Student Performance dataset
-File used: student-por.csv (Portuguese)
+9) Model Persistence
+The best-performing model was serialized using Python’s pickle library.
+Saved model location:
+models/best_model_Random Forest (Mid).pkl
+The saved object contains the complete Pipeline:
+Preprocessing steps
+Trained model parameters
+This ensures:
+Reproducibility
+Deployment readiness
+Consistent preprocessing during inference
+Loading the Model
 
-Note:
-The dataset also includes student-mat.csv.
-This project uses only student-por.csv to avoid overlap issues and ensure a clean experimental setup.
+import pickle
 
-8) How to Run
-Option A: Local (Recommended)
+with open("models/best_model_Random Forest (Mid).pkl", "rb") as f:
+    model = pickle.load(f)
+
+After reloading, the model reproduced identical test performance metrics, confirming successful persistence.
+
+10) Dataset
+Source: UCI Machine Learning Repository – Student Performance Dataset
+File used: student-por.csv (Portuguese dataset)
+The dataset contains 649 students and 33 attributes including demographic, social, and academic variables.
+
+11) How to Run
+Option A – Local Execution
 Clone the repository
-Place student-por.csv in the same folder as the notebook (or update CSV_PATH)
-
 Install dependencies:
 pip install -r requirements.txt
+Run the notebook in the notebooks/ directory
+OR
 
-Run the notebook.
-
-Option B: Google Colab
+Run main.py
+Option B – Google Colab
 Upload the notebook
 Upload student-por.csv
-Run:
-!pip -q install xgboost shap
 
-9) Requirements / Versions
+Install dependencies:
+!pip install xgboost shap
+12) Requirements
+
 Tested with:
 pandas 2.2.2
 numpy 2.0.2
 scikit-learn 1.6.1
 xgboost 3.2.0
 shap 0.50.0
+matplotlib
 
-10) Files in This Repository
-notebook.ipynb — Main analysis notebook (EDA, training, evaluation, SHAP, calibration)
-student-por.csv — Dataset file (not included if restricted by submission rules)
-README.md — Project documentation
-
-11) Author
+13) Repository Structure
+├── main.py
+├── requirements.txt
+├── README.md
+├── dataset/
+│   ├── student-por.csv
+│   ├── student-mat.csv
+│   └── student.txt
+├── models/
+│   └── best_model_Random Forest (Mid).pkl
+├── notebooks/
+│   └── student performance prediction.ipynb
+└── python/
+    └── notebook_json.py
+14) Author
 Name: Fathima Aabidha Rifky
 Cardiff Met ID: st20357374
 ICBT ID: CL-MCSDS-CMU-10-04
+Module: DAS7000 – Data Analytics and Visualisation

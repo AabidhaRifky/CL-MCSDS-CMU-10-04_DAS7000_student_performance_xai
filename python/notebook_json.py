@@ -887,6 +887,172 @@ display(mid_results_df)
 print('Combined comparison:')
 display(comparison_df.sort_values(by=['stage', 'f1_macro'], ascending=[True, False]))
 
+# --- Save the selected best model (full sklearn Pipeline) to a pickle and download it ---
+
+import pickle
+
+model_filename = f"best_model_{best_model_name}.pkl"
+
+# Save (pickle) the entire pipeline: preprocessing + model
+with open(model_filename, "wb") as f:
+    pickle.dump(best_model, f)
+
+print("Saved model to:", model_filename)
+
+# Download (Google Colab)
+from google.colab import files
+files.download(model_filename)
+
+# Load model (if you already loaded it, skip this)
+import pickle
+with open("/content/best_model_Random Forest (Mid).pkl", "rb") as f:
+    model = pickle.load(f)
+
+# Predict on Mid-term test set
+pred = model.predict(X_test_m)
+
+from sklearn.metrics import accuracy_score, f1_score, classification_report
+print("Accuracy:", accuracy_score(y_test_m, pred))
+print("Macro F1:", f1_score(y_test_m, pred, average="macro"))
+print(classification_report(y_test_m, pred))
+
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+import matplotlib.pyplot as plt
+
+pred = model.predict(X_test_m)
+
+cm = confusion_matrix(y_test_m, pred, labels=['Low','Medium','High'])
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=['Low','Medium','High'])
+disp.plot(values_format='d')
+plt.title("Best Model Confusion Matrix: Random Forest (Mid)")
+plt.show()
+
+import pandas as pd
+
+test_inputs = pd.DataFrame([
+
+# 1️⃣ Likely HIGH performer
+{
+'school':'GP','sex':'F','age':17,'address':'U','famsize':'GT3','Pstatus':'T',
+'Medu':4,'Fedu':4,'Mjob':'teacher','Fjob':'teacher','reason':'course','guardian':'mother',
+'traveltime':1,'studytime':4,'failures':0,'schoolsup':'no','famsup':'yes',
+'paid':'no','activities':'yes','nursery':'yes','higher':'yes','internet':'yes',
+'romantic':'no','famrel':5,'freetime':3,'goout':2,'Dalc':1,'Walc':1,
+'health':5,'absences':2,'G1':15,'G2':16
+},
+
+# 2️⃣ Likely MEDIUM performer
+{
+'school':'GP','sex':'M','age':16,'address':'U','famsize':'LE3','Pstatus':'T',
+'Medu':2,'Fedu':2,'Mjob':'services','Fjob':'other','reason':'home','guardian':'father',
+'traveltime':2,'studytime':2,'failures':0,'schoolsup':'no','famsup':'yes',
+'paid':'no','activities':'yes','nursery':'yes','higher':'yes','internet':'yes',
+'romantic':'yes','famrel':4,'freetime':4,'goout':3,'Dalc':1,'Walc':2,
+'health':4,'absences':5,'G1':12,'G2':12
+},
+
+# 3️⃣ Likely LOW performer
+{
+'school':'MS','sex':'M','age':18,'address':'R','famsize':'GT3','Pstatus':'A',
+'Medu':1,'Fedu':1,'Mjob':'other','Fjob':'other','reason':'reputation','guardian':'mother',
+'traveltime':3,'studytime':1,'failures':2,'schoolsup':'yes','famsup':'no',
+'paid':'yes','activities':'no','nursery':'no','higher':'no','internet':'no',
+'romantic':'yes','famrel':3,'freetime':5,'goout':5,'Dalc':3,'Walc':4,
+'health':3,'absences':15,'G1':7,'G2':8
+},
+
+# 4️⃣ Borderline MEDIUM/HIGH
+{
+'school':'GP','sex':'F','age':15,'address':'U','famsize':'GT3','Pstatus':'T',
+'Medu':3,'Fedu':3,'Mjob':'health','Fjob':'services','reason':'course','guardian':'mother',
+'traveltime':1,'studytime':3,'failures':0,'schoolsup':'no','famsup':'yes',
+'paid':'no','activities':'yes','nursery':'yes','higher':'yes','internet':'yes',
+'romantic':'no','famrel':4,'freetime':3,'goout':2,'Dalc':1,'Walc':1,
+'health':4,'absences':3,'G1':14,'G2':14
+},
+
+# 5️⃣ Risk student (likely LOW/MEDIUM)
+{
+'school':'MS','sex':'F','age':17,'address':'R','famsize':'LE3','Pstatus':'T',
+'Medu':2,'Fedu':1,'Mjob':'services','Fjob':'services','reason':'other','guardian':'father',
+'traveltime':4,'studytime':1,'failures':1,'schoolsup':'yes','famsup':'no',
+'paid':'yes','activities':'no','nursery':'yes','higher':'yes','internet':'no',
+'romantic':'yes','famrel':2,'freetime':5,'goout':4,'Dalc':2,'Walc':3,
+'health':3,'absences':12,'G1':9,'G2':10
+}
+
+])
+
+predictions = model.predict(test_inputs)
+print(predictions)
+
+proba_raw = model.predict_proba(test_inputs)
+proba = reorder_proba_to_class_order(model, proba_raw, CLASS_ORDER)
+
+for i, p in enumerate(predictions):
+    print(f"\nStudent {i+1}")
+    print("Prediction:", p)
+    print("Probabilities (Low, Medium, High):", proba[i])
+
+import os
+
+os.makedirs("results", exist_ok=True)
+print("results folder created.")
+
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+import matplotlib.pyplot as plt
+
+# Predict again (if needed)
+pred = model.predict(X_test_m)
+
+cm = confusion_matrix(y_test_m, pred, labels=['Low','Medium','High'])
+disp = ConfusionMatrixDisplay(confusion_matrix=cm,
+                              display_labels=['Low','Medium','High'])
+
+plt.figure(figsize=(6,5))
+disp.plot(values_format='d')
+plt.title("Confusion Matrix - Random Forest (Mid)")
+plt.tight_layout()
+
+plt.savefig("results/confusion_matrix.png", dpi=300)
+plt.close()
+
+print("Confusion matrix saved.")
+
+import pandas as pd
+from sklearn.metrics import accuracy_score, f1_score, roc_auc_score
+
+# Compute metrics
+accuracy = accuracy_score(y_test_m, pred)
+f1_macro = f1_score(y_test_m, pred, average='macro')
+f1_weighted = f1_score(y_test_m, pred, average='weighted')
+
+performance_df = pd.DataFrame({
+    "Metric": ["Accuracy", "Macro F1", "Weighted F1"],
+    "Value": [accuracy, f1_macro, f1_weighted]
+})
+
+# Save as image
+fig, ax = plt.subplots(figsize=(5,2))
+ax.axis('off')
+table = ax.table(cellText=performance_df.values,
+                 colLabels=performance_df.columns,
+                 loc='center')
+
+table.auto_set_font_size(False)
+table.set_fontsize(10)
+table.scale(1, 1.5)
+
+plt.savefig("results/performance_table.png", dpi=300, bbox_inches='tight')
+plt.close()
+
+print("Performance table saved.")
+
+from google.colab import files
+
+files.download("results/confusion_matrix.png")
+files.download("results/performance_table.png")
+
 """## 19. Key findings
 
 Suggested points to cover:
