@@ -175,8 +175,16 @@ The `results/` folder contains:
 - confusion_matrix.png
 - performance_table.png
 
-These files provide visual evidence of model evaluation on the held-out test set.
-15) Author
+15) Output
+
+The `output/` folder contains:
+- figures
+- texts
+- tables
+- models
+- best_model
+
+16) Author
 Name: Fathima Aabidha Rifky
 Cardiff Met ID: st20357374
 ICBT ID: CL-MCSDS-CMU-10-04

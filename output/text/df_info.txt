@@ -1,0 +1,40 @@
+<class 'pandas.core.frame.DataFrame'>
+RangeIndex: 649 entries, 0 to 648
+Data columns (total 33 columns):
+ #   Column      Non-Null Count  Dtype 
+---  ------      --------------  ----- 
+ 0   school      649 non-null    object
+ 1   sex         649 non-null    object
+ 2   age         649 non-null    int64 
+ 3   address     649 non-null    object
+ 4   famsize     649 non-null    object
+ 5   Pstatus     649 non-null    object
+ 6   Medu        649 non-null    int64 
+ 7   Fedu        649 non-null    int64 
+ 8   Mjob        649 non-null    object
+ 9   Fjob        649 non-null    object
+ 10  reason      649 non-null    object
+ 11  guardian    649 non-null    object
+ 12  traveltime  649 non-null    int64 
+ 13  studytime   649 non-null    int64 
+ 14  failures    649 non-null    int64 
+ 15  schoolsup   649 non-null    object
+ 16  famsup      649 non-null    object
+ 17  paid        649 non-null    object
+ 18  activities  649 non-null    object
+ 19  nursery     649 non-null    object
+ 20  higher      649 non-null    object
+ 21  internet    649 non-null    object
+ 22  romantic    649 non-null    object
+ 23  famrel      649 non-null    int64 
+ 24  freetime    649 non-null    int64 
+ 25  goout       649 non-null    int64 
+ 26  Dalc        649 non-null    int64 
+ 27  Walc        649 non-null    int64 
+ 28  health      649 non-null    int64 
+ 29  absences    649 non-null    int64 
+ 30  G1          649 non-null    int64 
+ 31  G2          649 non-null    int64 
+ 32  G3          649 non-null    int64 
+dtypes: int64(16), object(17)
+memory usage: 167.4+ KB
