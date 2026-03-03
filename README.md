@@ -169,7 +169,14 @@ matplotlib
 │   └── student performance prediction.ipynb
 └── python/
     └── notebook_json.py
-14) Author
+14) Results
+
+The `results/` folder contains:
+- confusion_matrix.png
+- performance_table.png
+
+These files provide visual evidence of model evaluation on the held-out test set.
+15) Author
 Name: Fathima Aabidha Rifky
 Cardiff Met ID: st20357374
 ICBT ID: CL-MCSDS-CMU-10-04
