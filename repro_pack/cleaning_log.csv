@@ -1,0 +1,9 @@
+step,action,details
+1,Load dataset,Loaded student-por.csv
+2,Target engineering,Created Low/Medium/High from G3
+3,Feature selection,Defined early and mid feature sets
+4,Preprocessing,OneHotEncoder + scaling where needed
+5,Train-test split,Stratified split random_state=42
+6,Model training,"LR, RF, XGBoost models trained"
+7,Evaluation,"Accuracy, F1, ROC-AUC"
+8,Model persistence,Best model saved as pickle
